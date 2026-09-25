@@ -1,5 +1,4 @@
 from turtle import Turtle, Screen
-import colorgram
 import random
 tim=Turtle()
 screen = Screen()
