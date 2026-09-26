@@ -1,3 +1,4 @@
+import json
 import os
 from tkinter import *
 from tkinter import  messagebox
@@ -31,19 +32,41 @@ def save():
     email=entry_email.get()
     password=entry_password.get()
     current_dir = os.path.dirname(__file__)
-    image_path = os.path.join(current_dir, "data.txt")
+    image_path = os.path.join(current_dir, "data.json")
 
     if len(website)==0 or len(password)==0:
         messagebox.showinfo(title="Oops", message="Please make sure you haven't left any fields empty.")
     else:
-        is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered: \nEmail: {email}\nPassword: {password}\nIs it ok to save?")
-        if is_ok:
-            data_file=open(image_path, "a")
-            data_file.write(f"{website} | {email} | {password}\n")
-            data_file.close()
-            entry_website.delete(0, END)
-            entry_password.delete(0,END)
-            entry_website.focus()
+        try:    
+            data_file=open(image_path, "r")
+            data=json.load(data_file )
+            data.update({website:{"email":email,"password":password}})
+        except FileNotFoundError:
+            data_file=open(image_path, "w")
+            data={website:{"email":email,"password":password}}
+        data_file=open(image_path, "w")
+        json.dump(data, data_file, indent=4)
+        entry_website.delete(0, END)
+        entry_password.delete(0,END)
+        entry_website.focus()
+
+# ---------------------------- SEARCH PASSWORD ------------------------------- #
+def search_password():
+        website=entry_website.get()
+        current_dir = os.path.dirname(__file__)
+        image_path = os.path.join(current_dir, "data.json")
+        try:
+             data_file=open(image_path,"r")
+             data=json.load(data_file)
+        except FileNotFoundError:
+            messagebox.showinfo(title="Error", message="No Data File Found.")
+        else:
+            if website in data:
+                email=data[website]["email"]
+                password=data[website]["password"]
+                messagebox.showinfo(title=website, message=f"Email: {email}\nPassword: {password}")
+            elif website not in data:
+                messagebox.showinfo(title="Error", message=f"No details for {website} exists.")
 
         
 # ---------------------------- UI SETUP ------------------------------- #
@@ -78,6 +101,8 @@ generate_password_button=Button(text="Generate Password",command=pass_gen)
 generate_password_button.grid(row=3, column=2)
 add_button=Button(text="Add", width=36,command=save)
 add_button.grid(row=4, column=1, columnspan=2)
+search_button=Button(text="Search", width=13, command=search_password)
+search_button.grid(row=1, column=2)
 
 
 
